@@ -14,57 +14,43 @@ Track **Laptop/PC ON Time**, **Shutdown Time**, and **Total Running Hours** auto
 * Auto-clean older logs from the backend
 
 ---
-📡 API Documentation — Windows Uptime Logger
+# 📡 API Documentation — Windows Uptime Logger
 
-The system exposes two main endpoints:
+The system exposes **two main endpoints**.
 
-1. Send System Log (PowerShell Script Endpoint)
+---
 
-Endpoint:
+## 1. Send System Log (PowerShell Script Endpoint)
 
-POST https://send-boot-shutdown-v1.onrender.com/system/log/createSystemLog
+**Endpoint:**  
+`POST https://send-boot-shutdown-v1.onrender.com/system/log/createSystemLog`
 
-
-Description:
-Automatically receives your PC/Laptop boot time and shutdown time via the PowerShell script when triggered on system shutdown.
-
-Request Payload (JSON):
-
+**Request Payload:**
+```json
 {
   "device": "DESKTOP-DS38AG8",
   "lastBootTime": "2025-11-27 10:42:00",
   "lastShutdownTime": "2025-11-27 10:46:00"
 }
+```
 
-
-Response Example:
-
+**Response:**
+```json
 {
   "success": true,
   "message": "Log saved successfully"
 }
+```
 
-2. Get System Logs
+---
 
-Endpoint:
+## 2. Get System Logs
 
-GET https://send-boot-shutdown-v1.onrender.com/system/log/getSystemLog
+**Endpoint:**  
+`GET https://send-boot-shutdown-v1.onrender.com/system/log/getSystemLog`
 
-
-Description:
-Fetches all system logs grouped by device. Shows boot time, shutdown time, and total ON time in a human-readable format.
-
-Query Parameters:
-
-device (optional) — Filter logs for a specific device.
-
-Example Request:
-
-GET https://send-boot-shutdown-v1.onrender.com/system/log/getSystemLog
-
-
-Example Response:
-
+**Response Example:**
+```json
 {
   "success": true,
   "data": {
@@ -74,48 +60,11 @@ Example Response:
         "bootTime": "27 Nov 2025, 05:09 PM",
         "shutdownTime": "27 Nov 2025, 05:11 PM",
         "totalOnTime": "0 hours 1 minute"
-      },
-      {
-        "device": "Manish Rj Pc",
-        "bootTime": "27 Nov 2025, 04:51 PM",
-        "shutdownTime": "27 Nov 2025, 04:55 PM",
-        "totalOnTime": "0 hours 3 minutes"
-      }
-    ],
-    "Rajnish Rj Pc": [
-      {
-        "device": "Rajnish Rj Pc",
-        "bootTime": "27 Nov 2025, 04:51 PM",
-        "shutdownTime": "27 Nov 2025, 04:55 PM",
-        "totalOnTime": "0 hours 3 minutes"
-      }
-    ],
-    "DESKTOP-DS38AG8": [
-      {
-        "device": "DESKTOP-DS38AG8",
-        "bootTime": "27 Nov 2025, 10:42 AM",
-        "shutdownTime": "27 Nov 2025, 10:46 AM",
-        "totalOnTime": "0 hours 3 minutes"
-      },
-      {
-        "device": "DESKTOP-DS38AG8",
-        "bootTime": "26 Nov 2025, 11:02 AM",
-        "shutdownTime": "27 Nov 2025, 10:33 AM",
-        "totalOnTime": "23 hours 30 minutes"
       }
     ]
   }
 }
-
-
-Notes:
-
-All times are in local timezone (Asia/Kolkata).
-
-totalOnTime is automatically calculated.
-
-Logs are grouped by device, making it easy to track multiple PCs.
-
+```
 # 📌 1. PowerShell Script (Place on Each Windows PC)
 
 Save this script as:
