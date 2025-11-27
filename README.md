@@ -115,55 +115,87 @@ try {
 
 ---
 
-# 📌 2. Setup Instructions (Windows)
+# Windows Uptime Monitor - Documentation
 
-## ✔️ Step 1 — Create Folder & Save Script
+## 🖥️ Task Scheduler Setup for Shutdown Script
 
-1. Create folder:
+This guide shows how to automatically run a PowerShell script on Windows shutdown to log your PC/Laptop ON and Shutdown times to the API.
+
+---
+
+### 1️⃣ Create Folder & Save Script
+
+1. Create a folder:
 
 ```
 C:\SystemMonitor
 ```
 
-2. Save file:
+2. Save your PowerShell script inside this folder as:
 
 ```
 log-uptime.ps1
 ```
 
-inside this folder.
+---
+
+### 2️⃣ Open Task Scheduler
+
+1. Press **Win + R**
+2. Type `taskschd.msc` and press **Enter**
 
 ---
 
-🖥️ Setup Task Scheduler (Windows) — Quick Steps
+### 3️⃣ Create a New Task
 
-Save Script
-Save your PowerShell script as:
+1. Click **Create Task…** (do not select "Create Basic Task")
+2. Name the task: **Windows Uptime Logger**
+
+---
+
+### 4️⃣ Configure the General Tab
+
+Check the following options:
+
+* ✅ **Run whether user is logged on or not**
+* ✅ **Run with highest privileges**
+
+---
+
+### 5️⃣ Add Shutdown Trigger
+
+1. Press **Win + R**, type `gpedit.msc`, press **Enter**
+2. Navigate to:
+
+```
+Computer Configuration → Windows Settings → Scripts (Startup/Shutdown)
+```
+
+3. Double-click **Shutdown** → click **Add…** → **Browse**
+4. Select your script:
+
+```
 C:\SystemMonitor\log-uptime.ps1
+```
 
-Open Task Scheduler
-Press Win + R → type taskschd.msc → Enter
+5. Click **OK** to save
 
-Create Task
+---
 
-Click Create Task…
+### 6️⃣ Verify Task
 
-Name: Windows Uptime Logger
+* Optionally, test your script manually by right-click → **Run**
+* Check **Event Viewer → Windows Logs → System** for script execution logs
 
-General: ✅ Run whether user is logged on or not
+---
 
-General: ✅ Run with highest privileges
+### 7️⃣ Outcome
 
-Add Shutdown Trigger
+* Every time your PC shuts down, the script will run automatically
+* Logs **Boot Time**, **Shutdown Time**, and calculates **Total ON Time**
+* Sends data to your API endpoint automatically
 
-Press Win + R → gpedit.msc → Enter
+---
 
-Navigate: Computer Configuration → Windows Settings → Scripts (Startup/Shutdown)
+**End of Task Scheduler Guide**
 
-Double-click Shutdown → Add → Browse → select your script
-
-Verify
-
-Check Event Viewer → Windows Logs → System
-
-Confirm script runs on shutdown and API logs are received
