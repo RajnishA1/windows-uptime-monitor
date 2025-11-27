@@ -1,84 +1,244 @@
-Windows में Laptop/PC ON Time + Shutdown Time ट्रैक करके API पर भेजने वाला पूरी तरह ऑटोमेटेड सिस्टम।
+# Windows Uptime Monitor – Full Documentation
 
-इसका इस्तेमाल करके आप Track कर सकते हो:
+Track **Laptop/PC ON Time**, **Shutdown Time**, and **Total Running Hours** automatically. This system logs your device activity to a remote API using a PowerShell script, Task Scheduler, or Shutdown Script.
 
-आपका PC/Laptop कब ON हुआ
+---
 
-कब Shutdown हुआ
+## 🚀 Features
 
-कितने घंटे चला (Total ON Time)
+* Logs **when your computer was turned ON**
+* Logs **when it was shut down**
+* Logs **total ON time between boot → shutdown**
+* Sends data automatically to your API endpoint
+* Works for **multiple computers**
+* Auto-clean older logs from the backend
 
-✅ How to Set Up Task Scheduler (Windows)
+---
 
-This section explains how to automatically run the PowerShell script during system shutdown so your shutdown time gets logged to the API.
+# 📌 1. PowerShell Script (Place on Each Windows PC)
 
-📌 Step 1 — Save the PowerShell Script
+Save this script as:
 
-Open Notepad.
-
-Paste your script inside it.
-
-Save the file as:
-
+```
 C:\SystemMonitor\log-uptime.ps1
-(You can choose any folder, but keep it permanent.)
+```
 
-📌 Step 2 — Open Task Scheduler
+### ✅ PowerShell Script
 
-Press Win + R
+```
+# ---------------- CONFIG ----------------
+$ApiUrl = "https://send-boot-shutdown-v1.onrender.com/system/log/createSystemLog"
+$ApiKey = "YOUR_API_KEY"
+# ---------------------------------------
+
+# ---------------- CURRENT BOOT TIME ----------------
+try {
+    $shutdownTime = Get-Date
+    $lastBoot = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+} catch { 
+    $lastBoot = $null 
+}
+
+# ---------------- CURRENT SHUTDOWN TIME ----------------
+$shutdownTime = Get-Date
+
+# ---------------- PAYLOAD ----------------
+$payload = [PSCustomObject]@{
+    device           = "Manish Rj Pc"
+    lastBootTime     = $lastBoot.ToString("yyyy-MM-dd HH:mm:ss")
+    lastShutdownTime = $shutdownTime.ToString("yyyy-MM-dd HH:mm:ss")
+}
+
+$json = $payload | ConvertTo-Json -Depth 2
+
+# ---------------- SEND TO API ----------------
+try {
+    $headers = @{ "Content-Type" = "application/json" }
+    if ($ApiKey -and $ApiKey.Length -gt 0) { $headers["x-api-key"] = $ApiKey }
+
+    $response = Invoke-RestMethod -Uri $ApiUrl -Method POST -Body $json -Headers $headers -TimeoutSec 15
+    Write-Host "Data sent to API successfully:" ($response | ConvertTo-Json -Depth 2)
+} catch {
+    Write-Error "Failed to send data: $_"
+}
+```
+
+---
+
+# 📌 2. Setup Instructions (Windows)
+
+## ✔️ Step 1 — Create Folder & Save Script
+
+1. Create folder:
+
+```
+C:\SystemMonitor
+```
+
+2. Save file:
+
+```
+log-uptime.ps1
+```
+
+inside this folder.
+
+---
+
+## ✔️ Step 2 — Enable PowerShell Script Execution
+
+Open **PowerShell as Administrator** and run:
+
+```
+Set-ExecutionPolicy RemoteSigned
+```
+
+Press **Y**.
+
+---
+
+# 📌 3. Auto-Run Script on Shutdown (Recommended Method)
+
+Windows does NOT have a built-in “Shutdown” trigger in Task Scheduler.
+So the best method is **Group Policy Shutdown Script**.
+
+## ✔️ Step 3 — Open Group Policy Editor
+
+Press:
+
+```
+Win + R
+```
 
 Type:
 
-taskschd.msc
-
-
-Press Enter
-
-
-📌 Step 3 — Create New Task
-
-Click "Create Task…" (NOT “Create Basic Task”)
-
-Give a name like:
-
-Windows Uptime Logger
-
-
-📌 Step 4 — Configure “General” Tab
-
-✔ Check the following:
-
-Run whether user is logged on or not
-
-Run with highest privileges
-
-📌 Step 5 — Configure Trigger (Shutdown Trigger)
-
-Windows has no direct “On Shutdown” trigger, so we use the Group Policy Shutdown Script Method OR the workaround below.
-
-🔥 Recommended: Use Shutdown Script (Most Reliable)
-
-Press Win + R, type:
-
+```
 gpedit.msc
+```
 
+Press Enter.
 
-Go to:
+---
 
-Computer Configuration  
-    → Windows Settings  
+## ✔️ Step 4 — Add Shutdown Script
+
+Navigate to:
+
+```
+Computer Configuration
+    → Windows Settings
         → Scripts (Startup/Shutdown)
+```
 
+1. Double-click **Shutdown**
+2. Click **Add**
+3. Click **Browse**
+4. Select:
 
-Double-click Shutdown
-
-Click Add → Browse
-
-Select your .ps1 script:
-
+```
 C:\SystemMonitor\log-uptime.ps1
+```
 
+5. Click **OK**
 
-Click OK
+🔥 Done!
+Your script will now run **every time Windows shuts down**.
 
-✔ Windows will now automatically run your PowerShell script every time the PC shuts down.
+---
+
+# 📌 4. Optional: Run Script via Task Scheduler
+
+If you want Task Scheduler instead of gpedit:
+
+## ✔️ Step 1 — Open Task Scheduler
+
+```
+taskschd.msc
+```
+
+## ✔️ Step 2 — Create Task
+
+* Click **Create Task**
+* Name: **Windows Uptime Logger**
+
+### General Tab:
+
+✔ Run whether user is logged on or not
+✔ Run with highest privileges
+
+### Triggers Tab:
+
+⚠ Windows does NOT support shutdown trigger
+But you can trigger:
+
+* On workstation lock
+* At logoff
+* At startup (for data recovery)
+
+### Actions Tab:
+
+Action: **Start a Program**
+Program:
+
+```
+powershell.exe
+```
+
+Arguments:
+
+```
+-ExecutionPolicy Bypass -File "C:\SystemMonitor\log-uptime.ps1"
+```
+
+---
+
+# 📌 5. API Response Format
+
+Your backend returns logs like:
+
+```
+{
+  device: "DESKTOP-ABC123",
+  bootTime: "27 Nov 2025, 10:20 AM",
+  shutdownTime: "27 Nov 2025, 02:45 PM",
+  totalOnTime: "4 hours 25 minutes"
+}
+```
+
+---
+
+# 📌 6. Backend Auto-Cleanup
+
+Your backend automatically deletes logs older than **10 days**.
+
+---
+
+# 📌 7. Usage Summary
+
+| Feature                     | Supported |
+| --------------------------- | --------- |
+| Track Boot Time             | ✅         |
+| Track Shutdown Time         | ✅         |
+| Track Total PC Running Time | ✅         |
+| Auto-Log on Shutdown        | ✅         |
+| Multi-PC Logs               | ✅         |
+| Auto Cleanup                | ✅         |
+
+---
+
+# 📌 8. GitHub Repository
+
+You can place this documentation into:
+
+```
+README.md
+```
+
+Repository:
+
+```
+https://github.com/RajnishA1/windows-uptime-monitor
+```
+
+---
+
