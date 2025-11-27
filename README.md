@@ -65,6 +65,53 @@ The system exposes **two main endpoints**.
   }
 }
 ```
+
+
+# Windows Uptime Monitor – Quick Testing Guide
+
+## 🔥 Direct Testing (Without Task Scheduler)
+
+If you want to TEST the system immediately:
+
+### ✅ Step 1 — Open PowerShell (Run as Administrator)
+Press:
+```
+Win + X → Windows PowerShell (Admin)
+```
+
+### ✅ Step 2 — Copy & Paste Your Script
+Just paste your full PowerShell script into the PowerShell window and press **Enter**.
+
+It will immediately:
+- Detect last boot time
+- Capture current shutdown trigger time (current time)
+- Send log to API
+- Show success message
+
+### ⚠️ NOTE
+This is ONLY for manual testing.  
+For automation, use Task Scheduler + Shutdown Script method.
+
+---
+
+## 📌 Script File Path (Recommended)
+Save your script permanently at:
+```
+C:\SystemMonitor\log-uptime.ps1
+```
+
+Then use Task Scheduler or Group Policy to run automatically on shutdown.
+
+---
+
+## 👍 You're Ready!
+Now you can test logs anytime before full automation.
+
+
+
+
+
+
 # 📌 1. PowerShell Script (Place on Each Windows PC)
 
 Save this script as:
