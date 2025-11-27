@@ -1,0 +1,1 @@
+export const DB_NAME = "send_boot_shutdown";
